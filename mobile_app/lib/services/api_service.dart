@@ -1,24 +1,98 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/incident.dart';
 
 class ApiService {
-  // Use 10.0.2.2 for Android Emulator to access localhost of the host machine
-  static const String baseUrl = 'http://10.0.2.2:8000'; 
+  // Explicitly set baseUrl for web (we're running as web app)
+  static const String baseUrl = 'http://127.0.0.1:8000';
 
   Future<List<Incident>> fetchIncidents() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/incidents/'));
+      // HARDCODED URL TO PREVENT ANY VARIABLE ISSUES
+      const url = 'http://127.0.0.1:8000/incidents/';
+      print('!!! FETCHING INCIDENTS !!!');
+      print('Target URL: $url');
+      
+      final response = await http.get(Uri.parse(url));
 
+      print('Response status: ${response.statusCode}');
+      print('Response body length: ${response.body.length}');
+      
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
         List<Incident> incidents = body.map((dynamic item) => Incident.fromJson(item)).toList();
+        print('Successfully fetched ${incidents.length} incidents');
         return incidents;
       } else {
-        throw Exception('Failed to load incidents');
+        print('Failed with status: ${response.statusCode}');
+        print('Body: ${response.body}');
+        throw Exception('Failed to load incidents: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      print('!!! ERROR FETCHING DATA !!!');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      throw Exception('Error fetching data: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> register({
+    required String email,
+    required String password,
+    required String fullName,
+    required String role,
+    String? phoneNumber,
+    String? department,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'full_name': fullName,
+          'role': role,
+          if (phoneNumber != null) 'phone_number': phoneNumber,
+          if (department != null) 'department': department,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Registration failed');
       }
     } catch (e) {
-      throw Exception('Error fetching data: $e');
+      throw Exception('Registration error: $e');
+    }
+  }
+
+  Future<String> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['access_token'];
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Login failed');
+      }
+    } catch (e) {
+      throw Exception('Login error: $e');
     }
   }
 }

@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.post("/", response_model=IncidentSchema)
 def create_incident(incident: IncidentCreate, db: Session = Depends(get_db)):
-    db_incident = Incident(**incident.model_dump())
+    db_incident = Incident(**incident.dict())
     db.add(db_incident)
     db.commit()
     db.refresh(db_incident)

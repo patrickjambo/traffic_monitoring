@@ -10,14 +10,14 @@ app = FastAPI(
 from app.db.session import engine
 from app.db.base_class import Base
 # Import models to ensure they are registered with Base
-from app.models import incident
+# Import models to ensure they are registered with Base
+from app.models import incident, user, alert
 
 Base.metadata.create_all(bind=engine)
 
 # Configure CORS
 origins = [
-    "http://localhost:5173",  # React Frontend
-    "http://localhost:3000",
+    "*",
 ]
 
 app.add_middleware(
@@ -37,4 +37,7 @@ def health_check():
     return {"status": "healthy"}
 
 from app.api import incidents
+from app.api.api_v1.endpoints import auth
+
 app.include_router(incidents.router, prefix="/incidents", tags=["incidents"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
