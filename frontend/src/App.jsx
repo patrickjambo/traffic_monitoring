@@ -137,14 +137,24 @@ const DashboardLayout = () => {
     );
 };
 
+import PublicDashboard from './components/PublicDashboard';
+
+// ... (imports remain the same)
+
 function App() {
     return (
         <Router>
             <Routes>
+                {/* Public Route */}
+                <Route path="/" element={<PublicDashboard />} />
+
+                {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+
+                {/* Protected Dashboard Routes */}
                 <Route
-                    path="/*"
+                    path="/dashboard/*"
                     element={
                         <ProtectedRoute>
                             <DashboardLayout />

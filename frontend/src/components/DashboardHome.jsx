@@ -31,7 +31,7 @@ const DashboardHome = ({ incidents, loading }) => {
     };
 
     return (
-        <div className="h-full flex flex-col gap-6 p-6 overflow-hidden">
+        <div className="h-full flex flex-col gap-6 p-6 overflow-y-auto custom-scrollbar">
             {/* KPI Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 flex-shrink-0">
                 <KPICard
@@ -68,21 +68,50 @@ const DashboardHome = ({ incidents, loading }) => {
             {/* Main Content Grid */}
             <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                 {/* Map Section (2/3 width) */}
-                <div className="lg:col-span-2 glass rounded-2xl border border-white/10 overflow-hidden relative flex flex-col">
-                    <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5 backdrop-blur-md z-10">
-                        <h3 className="font-bold text-white flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            LIVE TRAFFIC HEATMAP
-                        </h3>
-                        <div className="flex gap-2">
-                            <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">High Congestion (8)</span>
-                            <span className="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-1 rounded border border-orange-500/30">Medium (12)</span>
+                <div className="lg:col-span-2 flex flex-col gap-6">
+                    <div className="glass rounded-2xl border border-white/10 overflow-hidden relative flex flex-col flex-grow">
+                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5 backdrop-blur-md z-10">
+                            <h3 className="font-bold text-white flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                LIVE TRAFFIC HEATMAP
+                            </h3>
+                            <div className="flex gap-2">
+                                <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">High Congestion (8)</span>
+                                <span className="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-1 rounded border border-orange-500/30">Medium (12)</span>
+                            </div>
+                        </div>
+                        <div className="flex-grow relative min-h-[400px]">
+                            <Map incidents={incidents} />
+                            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 to-transparent" />
                         </div>
                     </div>
-                    <div className="flex-grow relative">
-                        <Map incidents={incidents} />
-                        {/* Gradient Overlay for better text visibility if needed */}
-                        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 to-transparent" />
+
+                    {/* Police Deployment Suggestions */}
+                    <div className="glass rounded-2xl border border-white/10 p-4">
+                        <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                            <ShieldCheckIcon className="w-5 h-5 text-blue-400" />
+                            RECOMMENDED POLICE DEPLOYMENT
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {incidents.filter(i => i.type === 'accident').length === 0 ? (
+                                <p className="text-sm text-gray-500 italic">No critical incidents requiring immediate deployment.</p>
+                            ) : (
+                                incidents.filter(i => i.type === 'accident').map(incident => (
+                                    <div key={incident.id} className="bg-blue-900/20 border border-blue-500/30 p-3 rounded-xl flex justify-between items-center">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-lg">💥</span>
+                                                <span className="font-bold text-sm text-white">Accident at {incident.latitude.toFixed(3)}, {incident.longitude.toFixed(3)}</span>
+                                            </div>
+                                            <p className="text-xs text-blue-200">Requires Traffic Control Unit</p>
+                                        </div>
+                                        <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                                            DEPLOY UNIT
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
 

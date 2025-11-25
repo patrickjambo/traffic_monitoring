@@ -32,7 +32,7 @@ const Login = () => {
             // UserLogin schema likely has email and password.
 
             localStorage.setItem('token', response.data.access_token);
-            navigate('/');
+            navigate('/dashboard');
         } catch (err) {
             console.error("Login error:", err);
             setError(err.response?.data?.detail || 'Failed to login. Please check your credentials.');
