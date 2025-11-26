@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import { AlertTriangle, Navigation, MapPin, Bell } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import 'leaflet-routing-machine';
+import L from 'leaflet';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
-// Fix for default Leaflet marker icons
+// Fix Leaflet default marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -16,49 +14,91 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Routing Component
-const RoutingControl = ({ start, end }) => {
+// Routing Component using Polyline
+function RouteDisplay({ start, end }) {
     const map = useMap();
 
     useEffect(() => {
-        if (!start || !end) return;
+        if (!start || !end || !map) return;
 
-        const routingControl = L.Routing.control({
-            waypoints: [
-                L.latLng(start.lat, start.lng),
-                L.latLng(end.lat, end.lng)
-            ],
-            routeWhileDragging: true,
-            lineOptions: {
-                styles: [{ color: '#6FA1EC', weight: 4 }]
-            },
-            show: false, // Hide the default instructions panel
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true,
-            showAlternatives: false
+        // Clear previous routes
+        map.eachLayer((layer) => {
+            if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Simple straight line route (in production, you'd use a routing API)
+        const routeLine = L.polyline([start, end], {
+            color: '#3B82F6',
+            weight: 4,
+            opacity: 0.8,
+            smoothFactor: 1
         }).addTo(map);
 
-        return () => map.removeControl(routingControl);
-    }, [map, start, end]);
+        // Add animated dash
+        let offset = 0;
+        const animate = () => {
+            offset += 0.5;
+            if (offset > 20) offset = 0;
+            routeLine.setStyle({ dashOffset: offset + 'px' });
+            requestAnimationFrame(animate);
+        };
+        animate();
+
+        // Fit bounds to show entire route
+        map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+        return () => {
+            map.removeLayer(routeLine);
+        };
+    }, [start, end, map]);
 
     return null;
-};
+}
 
 const PublicDashboard = () => {
+    const [startPoint, setStartPoint] = useState('');
+    const [destination, setDestination] = useState('');
+    const [showRoute, setShowRoute] = useState(false);
     const [incidents, setIncidents] = useState([]);
-    const [startLocation, setStartLocation] = useState('');
-    const [endLocation, setEndLocation] = useState('');
-    const [routePoints, setRoutePoints] = useState({ start: null, end: null });
 
-    // Hardcoded locations for demo
+    // Mock alerts for now
+    const [alerts, setAlerts] = useState([
+        {
+            id: 1,
+            type: 'warning',
+            message: 'Heavy traffic on KN 3 Ave',
+            time: '5 min ago',
+            severity: 'medium',
+            icon: '⚠️'
+        },
+        {
+            id: 2,
+            type: 'info',
+            message: 'Road construction on KG 11 Ave',
+            time: '15 min ago',
+            severity: 'low',
+            icon: '🚧'
+        },
+        {
+            id: 3,
+            type: 'danger',
+            message: 'Accident reported near Kigali Convention Centre',
+            time: '23 min ago',
+            severity: 'high',
+            icon: '🚨'
+        }
+    ]);
+
     const locations = {
-        "Kigali Heights": { lat: -1.9441, lng: 30.0619 },
-        "Remera": { lat: -1.9500, lng: 30.0580 },
-        "Kimironko": { lat: -1.9350, lng: 30.0800 },
-        "Kanombe": { lat: -1.9700, lng: 30.1000 },
-        "Kabeza": { lat: -1.9550, lng: 30.1050 },
-        "Nyamirambo": { lat: -1.9800, lng: 30.0500 }
+        'Kigali Heights': { lat: -1.9536, lng: 30.0919 },
+        'Remera': { lat: -1.9578, lng: 30.1132 },
+        'Kimironko': { lat: -1.9443, lng: 30.1257 },
+        'Nyabugogo': { lat: -1.9706, lng: 30.0588 },
+        'City Center': { lat: -1.9536, lng: 30.0606 },
+        'Kigali Convention Centre': { lat: -1.9514, lng: 30.0944 },
+        'Airport': { lat: -1.9686, lng: 30.1395 }
     };
 
     useEffect(() => {
@@ -76,183 +116,269 @@ const PublicDashboard = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const handleCheckRoute = (e) => {
-        e.preventDefault();
-        const start = locations[startLocation];
-        const end = locations[endLocation];
-
-        if (start && end) {
-            setRoutePoints({ start, end });
-        } else {
-            alert("Please select valid locations from the list.");
+    const handleCheckRoute = () => {
+        if (startPoint && destination && startPoint !== destination) {
+            setShowRoute(true);
         }
     };
 
-    // Helper to get icon based on type
-    const getIcon = (type) => {
-        let emoji = '⚠️';
-        if (type === 'accident') emoji = '💥';
-        if (type === 'congestion') emoji = '🚗';
-        if (type === 'road_blockage') emoji = '🚧';
+    const getMarkerIcon = (type) => {
+        const colors = {
+            accident: '#EF4444',
+            congestion: '#F59E0B',
+            road_blockage: '#3B82F6',
+            default: '#10B981'
+        };
+
+        const color = colors[type] || colors.default;
 
         return L.divIcon({
-            className: 'custom-icon',
-            html: `<div style="font-size: 24px;">${emoji}</div>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
+            html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
         });
     };
 
     return (
-        <div className="flex flex-col h-screen bg-gray-900 text-white overflow-hidden">
+        <div className="min-h-screen bg-slate-900 text-white flex flex-col">
             {/* Header */}
-            <header className="bg-gray-800 p-4 shadow-lg flex justify-between items-center z-20 flex-shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl">
-                        T
+            <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                            <Navigation className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold text-white">TRAFFIC MONITOR</h1>
+                            <p className="text-xs text-slate-400">Public Access Portal</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-xl font-bold tracking-wider">TRAFFIC MONITOR</h1>
-                        <p className="text-xs text-gray-400">Public Access Portal</p>
-                    </div>
+                    <Link
+                        to="/login"
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition shadow-lg shadow-blue-600/20"
+                    >
+                        Official Login
+                    </Link>
                 </div>
-                <Link
-                    to="/login"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-sm font-medium"
-                >
-                    Official Login
-                </Link>
             </header>
 
-            <div className="flex flex-row flex-grow overflow-hidden relative">
-                {/* Left Sidebar - Route & Incidents */}
-                <div className="w-96 bg-gray-800/95 backdrop-blur-md p-4 flex flex-col border-r border-gray-700 z-10 shadow-xl overflow-hidden flex-shrink-0">
+            <div className="flex flex-grow overflow-hidden relative flex-row">
+                {/* Left Sidebar */}
+                <div className="w-80 bg-slate-800 border-r border-slate-700 overflow-y-auto flex-shrink-0 z-10">
+                    <div className="p-6 space-y-6">
+                        {/* Check Route Section */}
+                        <div className="bg-slate-900 rounded-xl p-5 border border-slate-700">
+                            <h2 className="text-base font-bold text-white mb-4 flex items-center">
+                                <MapPin className="w-5 h-5 mr-2 text-blue-400" />
+                                Check Your Route
+                            </h2>
 
-                    {/* Route Checker Section */}
-                    <div className="mb-6 flex-shrink-0">
-                        <h2 className="text-lg font-semibold mb-4 text-blue-400 flex items-center gap-2">
-                            <span>📍</span> Check Your Route
-                        </h2>
-                        <form onSubmit={handleCheckRoute} className="space-y-3 bg-gray-700/30 p-4 rounded-xl border border-gray-600">
-                            <div>
-                                <label className="block text-xs text-gray-400 mb-1 uppercase font-bold">Start Point</label>
-                                <select
-                                    className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                    value={startLocation}
-                                    onChange={(e) => setStartLocation(e.target.value)}
-                                >
-                                    <option value="">Select Start...</option>
-                                    {Object.keys(locations).map(loc => (
-                                        <option key={loc} value={loc}>{loc}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs text-gray-400 mb-1 uppercase font-bold">Destination</label>
-                                <select
-                                    className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                    value={endLocation}
-                                    onChange={(e) => setEndLocation(e.target.value)}
-                                >
-                                    <option value="">Select Destination...</option>
-                                    {Object.keys(locations).map(loc => (
-                                        <option key={loc} value={loc}>{loc}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white py-2.5 rounded font-bold transition-all shadow-lg mt-2"
-                            >
-                                Check Route
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Incidents List Section */}
-                    <div className="flex-grow flex flex-col min-h-0">
-                        <h3 className="text-sm font-semibold text-gray-300 mb-3 border-b border-gray-700 pb-2 flex justify-between items-center">
-                            <span>Active Alerts</span>
-                            <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full border border-red-500/30">{incidents.length} Active</span>
-                        </h3>
-
-                        <div className="overflow-y-auto space-y-3 pr-2 custom-scrollbar flex-grow">
-                            {incidents.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500 italic">
-                                    <p>No active incidents reported.</p>
-                                    <p className="text-xs mt-1">Drive safely!</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
+                                        Start Point
+                                    </label>
+                                    <select
+                                        value={startPoint}
+                                        onChange={(e) => {
+                                            setStartPoint(e.target.value);
+                                            setShowRoute(false);
+                                        }}
+                                        className="w-full px-3 py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                    >
+                                        <option value="">Select Start...</option>
+                                        {Object.keys(locations).map(loc => (
+                                            <option key={loc} value={loc}>{loc}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                            ) : (
-                                incidents.map(incident => (
-                                    <div key={incident.id} className="bg-gray-700/40 p-3 rounded-lg border border-gray-600 hover:bg-gray-700/60 transition-colors group">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-lg">{incident.type === 'accident' ? '💥' : incident.type === 'congestion' ? '🚗' : '⚠️'}</span>
-                                                <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${incident.type === 'accident' ? 'bg-red-500/20 text-red-400' :
-                                                    incident.type === 'congestion' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'
-                                                    }`}>
-                                                    {incident.type}
-                                                </span>
-                                            </div>
-                                            <span className="text-[10px] text-gray-500">{new Date(incident.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </div>
 
-                                        <div className="pl-1">
-                                            <p className="text-sm text-gray-200 font-medium mb-1">{incident.description}</p>
-                                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                <span>📍</span>
-                                                <span>Lat: {incident.latitude.toFixed(4)}, Lng: {incident.longitude.toFixed(4)}</span>
-                                            </div>
-                                            {incident.type === 'accident' && (
-                                                <div className="mt-2 text-[10px] text-red-300 bg-red-900/20 p-1.5 rounded border border-red-900/30 flex items-center gap-1">
-                                                    <span>🚨</span> High Severity - Delays Expected
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
+                                        Destination
+                                    </label>
+                                    <select
+                                        value={destination}
+                                        onChange={(e) => {
+                                            setDestination(e.target.value);
+                                            setShowRoute(false);
+                                        }}
+                                        className="w-full px-3 py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                    >
+                                        <option value="">Select Destination...</option>
+                                        {Object.keys(locations).map(loc => (
+                                            <option key={loc} value={loc}>{loc}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <button
+                                    onClick={handleCheckRoute}
+                                    disabled={!startPoint || !destination || startPoint === destination}
+                                    className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg"
+                                >
+                                    <Navigation className="w-4 h-4 mr-2" />
+                                    Check Route
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Recent Incidents */}
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-sm font-bold text-white">Recent Incidents</h3>
+                                <span className="px-2.5 py-1 bg-red-500/20 text-red-400 text-xs font-bold rounded-full">
+                                    {incidents.length} Active
+                                </span>
+                            </div>
+
+                            <div className="space-y-2">
+                                {incidents.length === 0 ? (
+                                    <div className="text-center py-8 text-slate-500">
+                                        <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm italic">No active incidents reported</p>
+                                    </div>
+                                ) : (
+                                    incidents.map(inc => (
+                                        <div
+                                            key={inc.id}
+                                            className={`p-3 bg-slate-900 rounded-lg border-l-4 ${inc.type === 'accident' ? 'border-red-500' :
+                                                    inc.type === 'congestion' ? 'border-yellow-500' :
+                                                        'border-green-500'
+                                                } hover:bg-slate-800 transition cursor-pointer`}
+                                        >
+                                            <div className="flex items-start">
+                                                <AlertTriangle className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${inc.type === 'accident' ? 'text-red-400' :
+                                                        inc.type === 'congestion' ? 'text-yellow-400' :
+                                                            'text-green-400'
+                                                    }`} />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm text-white font-medium">{inc.description}</p>
+                                                    <p className="text-xs text-slate-400 mt-1">Lat: {inc.latitude.toFixed(3)}, Lng: {inc.longitude.toFixed(3)}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">{new Date(inc.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                                 </div>
-                                            )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Active Alerts */}
+                        <div>
+                            <h3 className="text-sm font-bold text-white mb-3 flex items-center">
+                                <Bell className="w-4 h-4 mr-2 text-yellow-400" />
+                                Active Alerts
+                            </h3>
+                            <div className="space-y-2">
+                                {alerts.map(alert => (
+                                    <div
+                                        key={alert.id}
+                                        className={`p-3 rounded-lg border ${alert.severity === 'high' ? 'bg-red-500/10 border-red-500/30' :
+                                                alert.severity === 'medium' ? 'bg-yellow-500/10 border-yellow-500/30' :
+                                                    'bg-blue-500/10 border-blue-500/30'
+                                            } hover:shadow-lg transition`}
+                                    >
+                                        <div className="flex items-start space-x-2">
+                                            <span className="text-lg">{alert.icon}</span>
+                                            <div className="flex-1">
+                                                <p className="text-sm text-white font-medium leading-snug">{alert.message}</p>
+                                                <p className="text-xs text-slate-400 mt-1">{alert.time}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                ))
-                            )}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Map Area (Right Side) */}
-                <div className="flex-grow h-full relative z-0 bg-gray-100">
+                {/* Map Section */}
+                <div className="flex-1 relative bg-gray-100 h-full">
                     <MapContainer
-                        center={[-1.9441, 30.0619]}
+                        center={[-1.9536, 30.0919]}
                         zoom={13}
+                        className="h-full w-full"
                         style={{ height: '100%', width: '100%', zIndex: 0 }}
+                        zoomControl={true}
+                        scrollWheelZoom={true}
                     >
                         <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
 
-                        {/* Incidents Markers */}
+                        {showRoute && startPoint && destination && locations[startPoint] && locations[destination] && (
+                            <>
+                                <RouteDisplay
+                                    start={locations[startPoint]}
+                                    end={locations[destination]}
+                                />
+                                <Marker position={locations[startPoint]} icon={L.divIcon({
+                                    html: `<div style="background-color: #10B981; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">S</div>`,
+                                    className: '',
+                                    iconSize: [24, 24],
+                                    iconAnchor: [12, 12]
+                                })}>
+                                    <Popup>
+                                        <div className="text-sm">
+                                            <p className="font-bold text-green-600">Start Point</p>
+                                            <p className="text-xs mt-1">{startPoint}</p>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                                <Marker position={locations[destination]} icon={L.divIcon({
+                                    html: `<div style="background-color: #EF4444; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">D</div>`,
+                                    className: '',
+                                    iconSize: [24, 24],
+                                    iconAnchor: [12, 12]
+                                })}>
+                                    <Popup>
+                                        <div className="text-sm">
+                                            <p className="font-bold text-red-600">Destination</p>
+                                            <p className="text-xs mt-1">{destination}</p>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            </>
+                        )}
+
                         {incidents.map(incident => (
                             <Marker
                                 key={incident.id}
                                 position={[incident.latitude, incident.longitude]}
-                                icon={getIcon(incident.type)}
+                                icon={getMarkerIcon(incident.type)}
                             >
-                                <Popup className="custom-popup">
-                                    <div className="p-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-xl">{incident.type === 'accident' ? '💥' : incident.type === 'congestion' ? '🚗' : '⚠️'}</span>
-                                            <strong className="text-sm uppercase font-bold text-gray-800">{incident.type}</strong>
-                                        </div>
-                                        <p className="text-xs text-gray-600 mb-1">{incident.description}</p>
-                                        <p className="text-[10px] text-gray-400">{new Date(incident.timestamp).toLocaleString()}</p>
+                                <Popup>
+                                    <div className="text-sm p-1">
+                                        <p className="font-bold text-gray-800">{incident.description}</p>
+                                        <p className="text-xs text-gray-600 mt-1">Type: {incident.type}</p>
+                                        <p className="text-xs text-gray-500 mt-1">{new Date(incident.timestamp).toLocaleString()}</p>
                                     </div>
                                 </Popup>
                             </Marker>
                         ))}
-
-                        {/* Route Line */}
-                        {routePoints.start && routePoints.end && (
-                            <RoutingControl start={routePoints.start} end={routePoints.end} />
-                        )}
                     </MapContainer>
+
+                    {/* Map Legend */}
+                    <div className="absolute bottom-6 right-6 bg-slate-800/95 backdrop-blur border border-slate-700 rounded-lg p-4 shadow-2xl z-[1000]">
+                        <h4 className="text-xs font-bold text-white mb-3 uppercase tracking-wide">Map Legend</h4>
+                        <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow"></div>
+                                <span className="text-xs text-slate-300">Accident (High)</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 bg-yellow-500 rounded-full border-2 border-white shadow"></div>
+                                <span className="text-xs text-slate-300">Congestion (Medium)</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow"></div>
+                                <span className="text-xs text-slate-300">Road Block (Low)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

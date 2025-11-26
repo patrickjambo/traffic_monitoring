@@ -1,0 +1,280 @@
+INFO:     Will watch for changes in these directories: ['/home/jambo/traffic-monitoring/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [67628] using StatReload
+INFO:     Started server process [67634]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60762 - "GET /incidents/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/uvicorn/protocols/http/h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 413, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 254, in serialize_response
+    raise ResponseValidationError(
+        errors=_normalize_errors(errors), body=response_content
+    )
+fastapi.exceptions.ResponseValidationError: 3 validation errors:
+  {'type': 'missing', 'loc': ('response', 0, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff937c1a0>}
+  {'type': 'missing', 'loc': ('response', 1, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff9381d10>}
+  {'type': 'missing', 'loc': ('response', 2, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff9381e50>}
+
+INFO:     127.0.0.1:60774 - "GET /incidents/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/uvicorn/protocols/http/h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 413, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 254, in serialize_response
+    raise ResponseValidationError(
+        errors=_normalize_errors(errors), body=response_content
+    )
+fastapi.exceptions.ResponseValidationError: 3 validation errors:
+  {'type': 'missing', 'loc': ('response', 0, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff8fec050>}
+  {'type': 'missing', 'loc': ('response', 1, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff8fec180>}
+  {'type': 'missing', 'loc': ('response', 2, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff93a5c70>}
+
+INFO:     127.0.0.1:60136 - "GET /incidents/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/uvicorn/protocols/http/h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 413, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/jambo/traffic-monitoring/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 254, in serialize_response
+    raise ResponseValidationError(
+        errors=_normalize_errors(errors), body=response_content
+    )
+fastapi.exceptions.ResponseValidationError: 3 validation errors:
+  {'type': 'missing', 'loc': ('response', 0, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff93a07c0>}
+  {'type': 'missing', 'loc': ('response', 1, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff93a08d0>}
+  {'type': 'missing', 'loc': ('response', 2, 'timestamp'), 'msg': 'Field required', 'input': <app.models.incident.Incident object at 0x7f5ff93a9950>}
+
+WARNING:  StatReload detected changes in 'app/schemas/incident.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67634]
+INFO:     Started server process [68005]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:58770 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59102 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37380 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40040 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59326 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44398 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55634 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49198 - "OPTIONS /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49200 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49200 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49198 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49198 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36158 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36158 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36158 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36158 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36158 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36158 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48652 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48652 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35004 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35004 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41610 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55682 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55682 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55682 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38576 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38576 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38576 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59344 - "GET /incidents/ HTTP/1.1" 200 OK

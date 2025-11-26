@@ -21,12 +21,12 @@ class IncidentCreate(IncidentBase):
 class Incident(IncidentBase):
     id: UUID
     status: IncidentStatus
-    timestamp: datetime
     created_at: datetime
     updated_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None
     reported_by: Optional[UUID] = None
     verified_by: Optional[UUID] = None
+
 
     class Config:
         from_attributes = True

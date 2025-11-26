@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { Navigation } from 'lucide-react';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -16,20 +16,10 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const formData = new URLSearchParams();
-            formData.append('username', email); // FastAPI OAuth2PasswordRequestForm expects 'username'
-            formData.append('password', password);
-
             const response = await axios.post('http://localhost:8000/auth/login', {
                 email: email,
                 password: password
             });
-
-            // Adjust based on actual backend expectation. 
-            // The auth.py shows it expects UserLogin schema (JSON body), NOT OAuth2 form data.
-            // Let's double check auth.py content from previous turn.
-            // Line 33: def login(user_in: UserLogin, ...):
-            // UserLogin schema likely has email and password.
 
             localStorage.setItem('token', response.data.access_token);
             navigate('/dashboard');
@@ -42,21 +32,17 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#050b14] relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[100px]" />
-                <div className="absolute top-[40%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[100px]" />
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20 pointer-events-none"></div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md p-8 glass rounded-2xl border border-white/10 relative z-10 mx-4"
-            >
+            <div className="relative bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl p-8 w-full max-w-md z-10">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome Back</h1>
-                    <p className="text-gray-400 text-sm">Sign in to access the Traffic Monitoring System</p>
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg shadow-blue-600/20">
+                        <Navigation className="w-8 h-8 text-white" />
+                    </div>
+                    <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+                    <p className="text-slate-400">Sign in to access the Traffic Monitoring System</p>
                 </div>
 
                 {error && (
@@ -67,47 +53,51 @@ const Login = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2 uppercase tracking-wider">
+                            Email Address
+                        </label>
                         <input
                             type="email"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                             placeholder="officer@police.gov.rw"
+                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Password</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2 uppercase tracking-wider">
+                            Password
+                        </label>
                         <input
                             type="password"
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                             placeholder="••••••••"
+                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
                     >
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
                 </form>
 
                 <div className="mt-6 text-center">
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-sm text-slate-400">
                         Don't have an account?{' '}
                         <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
                             Register here
                         </Link>
                     </p>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };

@@ -1,139 +1,190 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import Map from './Map';
-import IncidentCard from './IncidentCard';
-import {
-    ClockIcon,
-    CheckCircleIcon,
-    ExclamationTriangleIcon,
-    ShieldCheckIcon
-} from '@heroicons/react/24/outline';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { AlertTriangle, Clock, CheckCircle, Activity, ShieldCheck } from 'lucide-react';
+import L from 'leaflet';
 
-const KPICard = ({ title, value, subtext, icon, color, glow }) => (
-    <div className={`glass p-5 rounded-2xl border border-white/5 relative overflow-hidden group ${glow}`}>
-        <div className={`absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity ${color}`}>
-            {icon}
-        </div>
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{title}</h3>
-        <div className="flex items-end gap-2">
-            <span className="text-3xl font-black text-white tracking-tight">{value}</span>
-            <span className={`text-xs font-bold mb-1 ${color}`}>{subtext}</span>
-        </div>
-    </div>
-);
-
-const DashboardHome = ({ incidents, loading }) => {
-    const stats = {
-        active: incidents.filter(i => i.status === 'verified').length,
-        critical: incidents.filter(i => i.type === 'accident').length,
-        resolved: 28, // Mock data for now
-        avgResponse: '4.2m'
+// Helper to get icon based on type
+const getMarkerIcon = (type) => {
+    const colors = {
+        accident: '#EF4444',
+        congestion: '#F59E0B',
+        road_blockage: '#3B82F6',
+        default: '#10B981'
     };
 
-    return (
-        <div className="h-full flex flex-col gap-6 p-6 overflow-y-auto custom-scrollbar">
-            {/* KPI Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 flex-shrink-0">
-                <KPICard
-                    title="Active Incidents"
-                    value={stats.active}
-                    subtext={`${stats.critical} Critical`}
-                    icon={<ExclamationTriangleIcon className="w-12 h-12" />}
-                    color="text-red-400"
-                    glow="shadow-[0_0_20px_rgba(248,113,113,0.1)]"
-                />
-                <KPICard
-                    title="Avg Response Time"
-                    value={stats.avgResponse}
-                    subtext="↓ 12% vs last week"
-                    icon={<ClockIcon className="w-12 h-12" />}
-                    color="text-blue-400"
-                />
-                <KPICard
-                    title="Resolved Today"
-                    value={stats.resolved}
-                    subtext="92% Clearance Rate"
-                    icon={<CheckCircleIcon className="w-12 h-12" />}
-                    color="text-green-400"
-                />
-                <KPICard
-                    title="System Health"
-                    value="98%"
-                    subtext="All Systems Operational"
-                    icon={<ShieldCheckIcon className="w-12 h-12" />}
-                    color="text-purple-400"
-                />
-            </div>
+    const color = colors[type] || colors.default;
 
-            {/* Main Content Grid */}
-            <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
-                {/* Map Section (2/3 width) */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
-                    <div className="glass rounded-2xl border border-white/10 overflow-hidden relative flex flex-col flex-grow">
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5 backdrop-blur-md z-10">
-                            <h3 className="font-bold text-white flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                LIVE TRAFFIC HEATMAP
-                            </h3>
-                            <div className="flex gap-2">
-                                <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">High Congestion (8)</span>
-                                <span className="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-1 rounded border border-orange-500/30">Medium (12)</span>
+    return L.divIcon({
+        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+        className: '',
+        iconSize: [24, 24]
+    });
+};
+
+const DashboardHome = ({ incidents, loading }) => {
+    const stats = [
+        {
+            label: 'Active Incidents',
+            value: incidents.length,
+            subtext: `${incidents.filter(i => i.type === 'accident').length} Critical`,
+            icon: AlertTriangle,
+            color: 'red'
+        },
+        {
+            label: 'Avg Response Time',
+            value: '4.2m',
+            subtext: '↓ 12% vs last week',
+            icon: Clock,
+            color: 'blue'
+        },
+        {
+            label: 'Resolved Today',
+            value: '28',
+            subtext: '92% Clearance Rate',
+            icon: CheckCircle,
+            color: 'green'
+        },
+        {
+            label: 'System Health',
+            value: '98%',
+            subtext: 'All Systems Operational',
+            icon: Activity,
+            color: 'purple'
+        }
+    ];
+
+    return (
+        <div className="p-6 h-full overflow-y-auto custom-scrollbar">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                {stats.map((stat, index) => (
+                    <div key={index} className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <p className="text-sm text-slate-400 mb-1">{stat.label}</p>
+                                <p className="text-3xl font-bold text-white">{stat.value}</p>
+                            </div>
+                            <div className={`p-3 bg-${stat.color}-500/20 rounded-lg`}>
+                                <stat.icon className={`w-6 h-6 text-${stat.color}-400`} />
                             </div>
                         </div>
-                        <div className="flex-grow relative min-h-[400px]">
-                            <Map incidents={incidents} />
-                            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 to-transparent" />
+                        <p className="text-sm text-green-400">{stat.subtext}</p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Map and Incidents Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Live Traffic Heatmap */}
+                <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-white flex items-center">
+                            <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                            LIVE TRAFFIC HEATMAP
+                        </h3>
+                        <div className="flex gap-2">
+                            <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-medium rounded border border-red-500/30">High Congestion (0)</span>
+                            <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-medium rounded border border-yellow-500/30">Medium (0)</span>
                         </div>
                     </div>
-
-                    {/* Police Deployment Suggestions */}
-                    <div className="glass rounded-2xl border border-white/10 p-4">
-                        <h3 className="font-bold text-white mb-3 flex items-center gap-2">
-                            <ShieldCheckIcon className="w-5 h-5 text-blue-400" />
-                            RECOMMENDED POLICE DEPLOYMENT
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {incidents.filter(i => i.type === 'accident').length === 0 ? (
-                                <p className="text-sm text-gray-500 italic">No critical incidents requiring immediate deployment.</p>
-                            ) : (
-                                incidents.filter(i => i.type === 'accident').map(incident => (
-                                    <div key={incident.id} className="bg-blue-900/20 border border-blue-500/30 p-3 rounded-xl flex justify-between items-center">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-lg">💥</span>
-                                                <span className="font-bold text-sm text-white">Accident at {incident.latitude.toFixed(3)}, {incident.longitude.toFixed(3)}</span>
-                                            </div>
-                                            <p className="text-xs text-blue-200">Requires Traffic Control Unit</p>
+                    <div className="h-96 bg-slate-900 rounded-lg overflow-hidden relative z-0">
+                        <MapContainer
+                            center={[-1.9441, 30.0619]}
+                            zoom={13}
+                            className="h-full w-full"
+                            style={{ height: '100%', width: '100%', zIndex: 0 }}
+                        >
+                            <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            />
+                            {incidents.map(incident => (
+                                <Marker
+                                    key={incident.id}
+                                    position={[incident.latitude, incident.longitude]}
+                                    icon={getMarkerIcon(incident.type)}
+                                >
+                                    <Popup>
+                                        <div className="text-sm">
+                                            <p className="font-semibold">{incident.description}</p>
+                                            <p className="text-xs text-gray-600 mt-1">Type: {incident.type}</p>
+                                            <p className="text-xs text-gray-500">{new Date(incident.timestamp).toLocaleString()}</p>
                                         </div>
-                                        <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
-                                            DEPLOY UNIT
-                                        </button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </MapContainer>
                     </div>
                 </div>
 
-                {/* Feed Section (1/3 width) */}
-                <div className="glass rounded-2xl border border-white/10 overflow-hidden flex flex-col">
-                    <div className="p-4 border-b border-white/5 bg-white/5 backdrop-blur-md">
-                        <h3 className="font-bold text-white">INCIDENT FEED</h3>
-                        <span className="text-xs text-gray-400">Real-time Stream</span>
-                    </div>
+                {/* Incident Feed */}
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col h-full">
+                    <h3 className="text-lg font-semibold text-white mb-4">INCIDENT FEED</h3>
+                    <p className="text-sm text-slate-400 mb-2">Real-time Stream</p>
 
-                    <div className="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                    <div className="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar max-h-[400px]">
                         {loading ? (
-                            <div className="text-center py-10 text-gray-500 animate-pulse">Initializing Feed...</div>
+                            <div className="text-center py-10 text-slate-500 animate-pulse">Initializing Feed...</div>
+                        ) : incidents.length === 0 ? (
+                            <div className="flex items-center justify-center h-64 text-slate-500">
+                                <div className="text-center">
+                                    <CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                    <p className="text-sm font-mono">NO ACTIVE INCIDENTS</p>
+                                    <p className="text-xs mt-2">All clear on monitored routes</p>
+                                </div>
+                            </div>
                         ) : (
-                            incidents.map((incident) => (
-                                <IncidentCard key={incident.id} incident={incident} />
+                            incidents.map(incident => (
+                                <div key={incident.id} className="p-3 bg-slate-900 rounded-lg border border-slate-700 hover:bg-slate-700/50 transition-colors">
+                                    <div className="flex items-start">
+                                        <AlertTriangle className={`w-4 h-4 mr-2 mt-0.5 ${incident.type === 'accident' ? 'text-red-400' : 'text-yellow-400'}`} />
+                                        <div>
+                                            <p className="text-sm text-white font-medium">{incident.description}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`text-[10px] uppercase px-1.5 py-0.5 rounded ${incident.type === 'accident' ? 'bg-red-500/20 text-red-400' :
+                                                        incident.type === 'congestion' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'
+                                                    }`}>
+                                                    {incident.type}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400">{new Date(incident.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             ))
                         )}
-                        {incidents.length === 0 && !loading && (
-                            <div className="text-center py-10 text-gray-500 font-mono text-xs">NO ACTIVE INCIDENTS</div>
-                        )}
                     </div>
+                </div>
+            </div>
+
+            {/* Recommended Police Deployment */}
+            <div className="mt-6 bg-slate-800 border border-slate-700 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <ShieldCheck className="w-5 h-5 mr-2 text-blue-400" />
+                    RECOMMENDED POLICE DEPLOYMENT
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {incidents.filter(i => i.type === 'accident').length === 0 ? (
+                        <div className="text-center py-8 text-slate-400 col-span-2">
+                            <p className="text-sm">No critical incidents requiring immediate deployment.</p>
+                        </div>
+                    ) : (
+                        incidents.filter(i => i.type === 'accident').map(incident => (
+                            <div key={incident.id} className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl flex justify-between items-center">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-lg">💥</span>
+                                        <span className="font-bold text-sm text-white">Accident at {incident.latitude.toFixed(3)}, {incident.longitude.toFixed(3)}</span>
+                                    </div>
+                                    <p className="text-xs text-blue-200">Requires Traffic Control Unit</p>
+                                </div>
+                                <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-600/20">
+                                    DEPLOY UNIT
+                                </button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
